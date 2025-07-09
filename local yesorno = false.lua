@@ -1,17 +1,3 @@
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-local webhookURL = getgenv().WebhookURL
-
-local function isValidWebhook(url)
-    return typeof(url) == "string" and url:match("^https?://.+")
-end
-
-if not webhookURL or not isValidWebhook(webhookURL) then
-    player:Kick("No webhook or invalid webhook")
-    return
-end
-
 local yesorno = false
 local result = messagebox(
     "Do you really want to continue, this might be detected??",
@@ -29,9 +15,11 @@ if yesorno == true then
     wait(1)
 
     local TweenService = game:GetService("TweenService")
+    local Players = game:GetService("Players")
     local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local HttpService = game:GetService("HttpService")
 
+    local player = Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local rootPart = character:WaitForChild("HumanoidRootPart")
     local Backpack = player:WaitForChild("Backpack")
@@ -40,10 +28,11 @@ if yesorno == true then
     local tryPickUp = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("TryPickUp")
     local binsFolder = workspace.PrinterGame.Bins
 
-    local trashCount = 0
+    local trashCount = 0        -- counts to 20 before firing bins
+    local totalTrashCount = 0   -- full session total
 
     local steps = {
-        { cf = CFrame.new(-38.272995, 15.0156355, 701.851685, 0.0533493198, -5.00630719e-08, -0.998575926, 7.89764414e-08, 1, -4.59151224e-08, 0.998575926, -7.64144303e-08, 0.0533493198), time = 3 },
+        {cf =  CFrame.new(-38.272995, 15.0156355, 701.851685, 0.0533493198, -5.00630719e-08, -0.998575926, 7.89764414e-08, 1, -4.59151224e-08, 0.998575926, -7.64144303e-08, 0.0533493198), time = 3},
         { cf = CFrame.new(-202.964127, 3.99999976, 703.783936, -0.0157073159, -3.97297928e-09, 0.999876618, 3.53278673e-09, 1, 4.02896694e-09, -0.999876618, 3.59563512e-09, -0.0157073159), time = 2 },
         { cf = CFrame.new(-202.248657, 3.99999976, 652.996094, 0.0219905712, -1.40403209e-08, 0.999758184, 7.32728944e-09, 1, 1.38825467e-08, -0.999758184, 7.0202324e-09, 0.0219905712), time = 2 },
         { cf = CFrame.new(-395.970215, 4.99999952, 652.537781, -9.44024592e-08, 8.21478068e-08, 1, -4.48650503e-08, 1, -8.21478139e-08, -1, -4.48650574e-08, -9.44024592e-08), time = 3 },
@@ -52,7 +41,7 @@ if yesorno == true then
 
     for _, step in ipairs(steps) do
         local tweenInfo = TweenInfo.new(step.time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local tween = TweenService:Create(rootPart, tweenInfo, { CFrame = step.cf })
+        local tween = TweenService:Create(rootPart, tweenInfo, {CFrame = step.cf})
         tween:Play()
         tween.Completed:Wait()
     end
@@ -62,7 +51,7 @@ if yesorno == true then
     local function sendWebhook(count)
         local success, err = pcall(function()
             request({
-                Url = webhookURL,
+                Url = getgenv().WebhookURL,
                 Method = "POST",
                 Headers = { ["Content-Type"] = "application/json" },
                 Body = HttpService:JSONEncode({
@@ -111,14 +100,16 @@ if yesorno == true then
             if litterPicker then
                 tryPickUp:InvokeServer(trash, litterPicker)
                 trashCount += 1
-                print("Trash picked up: " .. trashCount)
+                totalTrashCount += 1
+                print("Trash picked up this batch: " .. trashCount)
+                print("Total trash picked up: " .. totalTrashCount)
 
                 if trashCount >= 20 then
                     for i = 1, 19 do
                         local ProximityPrompt = binsFolder:GetChildren()[i].Lid.ProxHolder.BinProx
                         fireproximityprompt(ProximityPrompt)
                     end
-                    sendWebhook(trashCount)
+                    sendWebhook(totalTrashCount) -- Send total accumulated count
                     trashCount = 0
                 end
             end
