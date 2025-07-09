@@ -2,7 +2,7 @@ local yesorno = false
 local result = messagebox(
     "Do you really want to continue, this might be detected??",
     "Confirmation",
-    1 -- Yes / No / Cancel
+    48 -- Yes / No / Cancel
 )
 
 if result == 1 then
