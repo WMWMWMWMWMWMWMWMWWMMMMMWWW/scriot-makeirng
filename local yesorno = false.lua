@@ -101,9 +101,6 @@ if yesorno == true then
                 tryPickUp:InvokeServer(trash, litterPicker)
                 trashCount += 1
                 totalTrashCount += 1
-                print("Trash picked up this batch: " .. trashCount)
-                print("Total trash picked up: " .. totalTrashCount)
-
                 if trashCount >= 20 then
                     for i = 1, 19 do
                         local ProximityPrompt = binsFolder:GetChildren()[i].Lid.ProxHolder.BinProx
