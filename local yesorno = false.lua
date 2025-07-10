@@ -32,7 +32,7 @@ if yesorno == true then
     local totalTrashCount = 0   -- full session total
 
     local steps = {
-        {cf =  CFrame.new(-38.272995, 15.0156355, 701.851685, 0.0533493198, -5.00630719e-08, -0.998575926, 7.89764414e-08, 1, -4.59151224e-08, 0.998575926, -7.64144303e-08, 0.0533493198), time = 3},
+        {cf =  CFrame.new(-38.272995, 15.0156355, 701.851685, 0.0533493198, -5.00630719e-08, -0.998575926, 7.89764414e-08, 1, -4.59151224e-08, 0.998575926, -7.64144303e-08, 0.0533493198), time = 3}, -- all the cframe it goes to
         { cf = CFrame.new(-202.964127, 3.99999976, 703.783936, -0.0157073159, -3.97297928e-09, 0.999876618, 3.53278673e-09, 1, 4.02896694e-09, -0.999876618, 3.59563512e-09, -0.0157073159), time = 2 },
         { cf = CFrame.new(-202.248657, 3.99999976, 652.996094, 0.0219905712, -1.40403209e-08, 0.999758184, 7.32728944e-09, 1, 1.38825467e-08, -0.999758184, 7.0202324e-09, 0.0219905712), time = 2 },
         { cf = CFrame.new(-395.970215, 4.99999952, 652.537781, -9.44024592e-08, 8.21478068e-08, 1, -4.48650503e-08, 1, -8.21478139e-08, -1, -4.48650574e-08, -9.44024592e-08), time = 3 },
@@ -41,26 +41,26 @@ if yesorno == true then
 
     for _, step in ipairs(steps) do
         local tweenInfo = TweenInfo.new(step.time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local tween = TweenService:Create(rootPart, tweenInfo, {CFrame = step.cf})
+        local tween = TweenService:Create(rootPart, tweenInfo, {CFrame = step.cf}) -- tween type
         tween:Play()
         tween.Completed:Wait()
     end
 
-    rootPart.Anchored = true
+    rootPart.Anchored = true -- changes humandot root part to anchorded
 
     local function sendWebhook(count)
         local success, err = pcall(function()
             request({
                 Url = getgenv().WebhookURL,
                 Method = "POST",
-                Headers = { ["Content-Type"] = "application/json" },
+                Headers = { ["Content-Type"] = "application/json" }, -- webook handler
                 Body = HttpService:JSONEncode({
                     content = "**Session Trash Count:** " .. tostring(count)
                 })
             })
         end)
         if success then
-            print("[Webhook] Sent trash count: " .. tostring(count))
+            print("[Webhook] Sent trash count: " .. tostring(count)) -- prints if it sends and if it does not send it fails
         else
             warn("Failed to send webhook: " .. tostring(err))
         end
@@ -73,7 +73,7 @@ if yesorno == true then
                 if trash:IsA("BasePart") then
                     trash.CanCollide = false
                 elseif trash:IsA("Model") then
-                    for _, part in ipairs(trash:GetDescendants()) do
+                    for _, part in ipairs(trash:GetDescendants()) do -- teleports trash to user via cframe and turns off collide
                         if part:IsA("BasePart") then
                             part.CanCollide = false
                         end
@@ -84,7 +84,7 @@ if yesorno == true then
             local tools = Backpack:GetChildren()
             if #tools >= 2 then
                 local secondTool = tools[2]
-                if not character:FindFirstChildOfClass("Tool") then
+                if not character:FindFirstChildOfClass("Tool") then      -- pretty much equips the trash tool
                     secondTool.Parent = character
                 end
             end
@@ -96,7 +96,7 @@ if yesorno == true then
                 trash:SetPrimaryPartCFrame(rootPart.CFrame * CFrame.new(2, 0, 0))
             end
 
-            local litterPicker = character:FindFirstChildOfClass("Tool")
+            local litterPicker = character:FindFirstChildOfClass("Tool")     
             if litterPicker then
                 tryPickUp:InvokeServer(trash, litterPicker)
                 trashCount += 1
@@ -106,7 +106,7 @@ if yesorno == true then
                         local ProximityPrompt = binsFolder:GetChildren()[i].Lid.ProxHolder.BinProx
                         fireproximityprompt(ProximityPrompt)
                     end
-                    sendWebhook(totalTrashCount) -- Send total accumulated count
+                    sendWebhook(totalTrashCount) -- Send total amount of trash  count
                     trashCount = 0
                 end
             end
