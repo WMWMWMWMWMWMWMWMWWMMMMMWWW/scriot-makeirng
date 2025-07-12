@@ -1,0 +1,23 @@
+-- Move player slightly underground when you press Z (toggle)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+local enabled = false
+local offset = Vector3.new(0, 0, -2.2) 
+
+LocalPlayer:GetMouse().KeyDown:Connect(function(key)
+	if key == "z" then
+		enabled = not enabled
+		if enabled then
+			print("Underground: ON")
+			HumanoidRootPart.Position = HumanoidRootPart.Position + offset
+		else
+			print("Underground: OFF")
+			HumanoidRootPart.Position = HumanoidRootPart.Position - offset
+		end
+	end
+end)
