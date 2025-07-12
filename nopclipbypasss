@@ -1,0 +1,24 @@
+-- Move player upward when you press B (toggle)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+local enabled = false
+local offset = Vector3.new(0, 0, 2.2) -- positive for upward movement
+
+-- Listen for B key
+LocalPlayer:GetMouse().KeyDown:Connect(function(key)
+	if key == "b" then
+		enabled = not enabled
+		if enabled then
+			print("Going Up: ON")
+			HumanoidRootPart.Position = HumanoidRootPart.Position + offset
+		else
+			print("Going Up: OFF")
+			HumanoidRootPart.Position = HumanoidRootPart.Position - offset
+		end
+	end
+end)
