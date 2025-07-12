@@ -1,23 +1,55 @@
--- Move player slightly underground when you press Z (toggle)
+local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+local player = Players.LocalPlayer
 
-local enabled = false
-local offset = Vector3.new(0, 0, -2.2) 
+-- Your CFrame data
+local waypoints = {
+	CFrame.new(29.3142185, 14.7656355, 635.271606, -0.043621175, 7.13709127e-08, -0.999048114, 1.76688424e-08, 1, 7.06674399e-08, 0.999048114, -1.45694266e-08, -0.043621175),
+	CFrame.new(15.963109, 4.99999571, 563.093567, 0.79392153, -1.77044459e-08, -0.608020246, 6.45288978e-08, 1, 5.51403296e-08, 0.608020246, -8.30119689e-08, 0.79392153),
+	CFrame.new(10.0186672, 4.99999571, 407.744873, 0.0261769127, -1.31153381e-08, 0.999657333, 8.59412381e-08, 1, 1.08693863e-08, -0.999657333, 8.56272564e-08, 0.0261769127),
+	CFrame.new(-74.6478806, 4.99999523, 404.005249, 0.999667823, 1.79506343e-09, -0.0257724822, -1.46347312e-09, 1, 1.28849207e-08, 0.0257724822, -1.28429232e-08, 0.999667823),
+	CFrame.new(-75.2855225, -24.0001144, 402.939728, 0.924459636, 1.09336824e-07, 0.381279886, -9.8931622e-08, 1, -4.6890829e-08, -0.381279886, 5.62803848e-09, 0.924459636),
+	CFrame.new(-111.888504, -17.8666859, 369.726166, 0.78045541, 2.04163548e-08, 0.625211418, -1.098008e-08, 1, -1.89486169e-08, -0.625211418, 7.92367949e-09, 0.78045541),
+	CFrame.new(-141.307129, -20.4307098, 333.694244, 0.782614708, -1.2460375e-09, 0.62250638, 7.23972846e-08, 1, -8.90161829e-08, -0.62250638, 1.14733147e-07, 0.782614708)
+}
 
-LocalPlayer:GetMouse().KeyDown:Connect(function(key)
-	if key == "z" then
-		enabled = not enabled
-		if enabled then
-			print("Underground: ON")
-			HumanoidRootPart.Position = HumanoidRootPart.Position + offset
-		else
-			print("Underground: OFF")
-			HumanoidRootPart.Position = HumanoidRootPart.Position - offset
-		end
+-- Per-point tween durations
+local speeds = {
+	1, 1, 1, 2, 1, 1, 1
+}
+
+-- Tween sequence function for a given HumanoidRootPart
+local function runTweenSequence(hrp)
+	for i = 1, #waypoints do
+		local tweenInfo = TweenInfo.new(
+			speeds[i] or 3,
+			Enum.EasingStyle.Linear,
+			Enum.EasingDirection.InOut
+		)
+
+		local tween = TweenService:Create(hrp, tweenInfo, {
+			CFrame = waypoints[i]
+		})
+
+		tween:Play()
+		tween.Completed:Wait()
 	end
-end)
+
+	print("Finished moving LocalPlayer!")
+end
+
+-- Runs once when character spawns
+local function onCharacterAdded(character)
+	local hrp = character:WaitForChild("HumanoidRootPart")
+	task.wait(1) -- wait 5 seconds after respawn
+	runTweenSequence(hrp)
+end
+
+-- Run immediately if already spawned
+if player.Character then
+	onCharacterAdded(player.Character)
+end
+
+-- Connect for future respawns
+player.CharacterAdded:Connect(onCharacterAdded)
