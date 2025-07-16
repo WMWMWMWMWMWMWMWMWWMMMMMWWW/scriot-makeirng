@@ -1,0 +1,93 @@
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Setup ScreenGui and TextLabel for notifications
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "NotifierGui"
+screenGui.Parent = playerGui
+
+local textLabel = Instance.new("TextLabel")
+textLabel.Size = UDim2.new(0, 250, 0, 50)
+textLabel.Position = UDim2.new(0.5, -125, 0.1, 0)
+textLabel.BackgroundTransparency = 0.3
+textLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+textLabel.Font = Enum.Font.SourceSansBold
+textLabel.TextSize = 24
+textLabel.Text = ""
+textLabel.Visible = false
+textLabel.Parent = screenGui
+
+-- Forever Collect + Pan + Shake loop
+task.spawn(function()
+    while true do
+        task.wait()
+
+        local character = player.Character or player.CharacterAdded:Wait()
+        local args = {2}
+
+        for _, item in ipairs(character:GetChildren()) do
+            if item:IsA("Tool") and string.find(item.Name, "Pan") then
+                local panTool = character:WaitForChild(item.Name)
+                local scripts = panTool:WaitForChild("Scripts")
+
+                -- COLLECT
+                local collect = scripts:WaitForChild("Collect")
+                collect:InvokeServer(unpack(args))
+
+                -- PAN
+                local panAction = scripts:WaitForChild("Pan")
+                panAction:InvokeServer()
+
+                -- SHAKE after Pan
+                local shake = scripts:WaitForChild("Shake")
+                shake:FireServer()
+            end
+        end
+    end
+end)
+
+-- Define teleport target CFrame from your data
+local targetCFrame = CFrame.new(-116.329918, 9, 70.317482) * CFrame.fromMatrix(
+    Vector3.new(),
+    Vector3.new(-0.998915374, 4.81308282e-09, -0.0465622917),
+    Vector3.new(9.66553837e-10, 1, 8.26329014e-08),
+    Vector3.new(0.0465622917, 8.24982749e-08, -0.998915374)
+)
+
+-- Function to show notification text
+local function showNotification(text, duration)
+    textLabel.Text = text
+    textLabel.Visible = true
+    task.delay(duration, function()
+        textLabel.Visible = false
+    end)
+end
+
+-- Input listener for keys
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.KeyCode == Enum.KeyCode.X then
+        local sellAll = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("Shop"):WaitForChild("SellAll")
+        sellAll:InvokeServer()
+        showNotification("Sold everything!", 2)
+
+    elseif input.KeyCode == Enum.KeyCode.Z then
+        local character = player.Character or player.CharacterAdded:Wait()
+        local root = character:WaitForChild("HumanoidRootPart")
+
+        local oldCFrame = root.CFrame
+        root.CFrame = targetCFrame
+
+        showNotification("Teleported!", 2)
+
+        task.wait(0.2)
+
+        root.CFrame = oldCFrame
+    end
+end)
