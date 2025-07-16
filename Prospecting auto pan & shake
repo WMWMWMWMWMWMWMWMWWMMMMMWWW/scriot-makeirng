@@ -52,11 +52,11 @@ task.spawn(function()
 end)
 
 -- Define teleport target CFrame from your data
-local targetCFrame = CFrame.new(-116.329918, 9, 70.317482) * CFrame.fromMatrix(
+local targetCFrame = CFrame.new(-90.200325, 9, -66.0425873) * CFrame.fromMatrix(
     Vector3.new(),
-    Vector3.new(-0.998915374, 4.81308282e-09, -0.0465622917),
-    Vector3.new(9.66553837e-10, 1, 8.26329014e-08),
-    Vector3.new(0.0465622917, 8.24982749e-08, -0.998915374)
+    Vector3.new(-0.866817594, 4.17140171e-08, 0.498625368),
+    Vector3.new(1.98268535e-09, 1, -8.02113007e-08),
+    Vector3.new(-0.498625368, -6.85399471e-08, -0.866817594)
 )
 
 -- Function to show notification text
