@@ -1,0 +1,64 @@
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local LocalPlayer = Players.LocalPlayer
+local Tycoons = workspace:WaitForChild("Tycoons")
+local Factory = nil
+
+for _, v in Tycoons:GetChildren() do
+	if v:FindFirstChild("Owner") and v.Owner.Value == LocalPlayer.Name then
+		Factory = v
+		break
+	end
+end
+
+ -- the button to toggle
+if not Factory then
+	warn("[AutoUpgrade] No factory found for you!")
+	return
+end
+
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoUpgradeGUI"
+ScreenGui.Parent = CoreGui
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 160, 0, 40)
+ToggleButton.Position = UDim2.new(0, 20, 0, 200)
+ToggleButton.Text = "Auto Upgrade: OFF"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Parent = ScreenGui
+
+local Enabled = false
+
+ToggleButton.MouseButton1Click:Connect(function()
+	Enabled = not Enabled
+	ToggleButton.Text = "Auto Upgrade: " .. (Enabled and "ON" or "OFF")
+	ToggleButton.BackgroundColor3 = Enabled and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(50, 50, 50)
+end)
+
+-- main looppp
+RunService.RenderStepped:Connect(function()
+	if not Enabled then return end
+
+	local DroppedParts = workspace:FindFirstChild("DroppedParts")
+	if not DroppedParts then return end
+
+	local MyDrops = DroppedParts:FindFirstChild(Factory.Name)
+	if not MyDrops then return end
+
+	for _, ore in MyDrops:GetChildren() do
+		for _, b in Factory:GetChildren() do
+			if b:IsA("Model") and b:FindFirstChild("Model") and b.Model:FindFirstChild("UpgraderShip") then
+				local upgrader = b.Model:FindFirstChild("Upgrade") or b.Model:FindFirstChild("Scan")
+				if upgrader then
+					firetouchinterest(ore, upgrader, 0)
+					firetouchinterest(ore, upgrader, 1)
+				end
+			end
+		end
+	end
+end)
